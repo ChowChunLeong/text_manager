@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Smart Text Manager</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="renderer.js"></script>
+  </head>
+  <body>
+    <div class="tab-container">
+      <div class="tabs">
+        <div class="tab active" onclick="openTab(event, 'tab1')">
+          Manage Text
+        </div>
+        <div class="tab" onclick="openTab(event, 'tab2')">Add Text</div>
+      </div>
+      <div class="tab-content active" id="tab1">
+        <input type="text" id="searchInput" placeholder="Search text..." />
+        <table id="textTable" class="display">
+          <thead>
+            <tr>
+              <th>Text</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="tab-content" id="tab2">
+        <textarea id="textInput" placeholder="Enter text..."></textarea>
+        <button id="saveBtn">Save</button>
+      </div>
+    </div>
+
+    <script>
+      function openTab(event, tabId) {
+        let tabs = document.querySelectorAll(".tab");
+        let contents = document.querySelectorAll(".tab-content");
+
+        tabs.forEach((tab) => tab.classList.remove("active"));
+        contents.forEach((content) => content.classList.remove("active"));
+
+        event.currentTarget.classList.add("active");
+        document.getElementById(tabId).classList.add("active");
+      }
+    </script>
+
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/datatables.net/js/jquery.dataTables.js"></script>
+  </body>
+</html>
