@@ -15,15 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return new Date(b.lastUsed) - new Date(a.lastUsed);
     });
 
-    console.log("After Sorting:", data); // Debugging
-
     data.forEach((item) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-                <td>${item.text}</td>
+                <td>${item.title}</td>
                 <td>
-                    <button class="copy-btn" data-text="${item.text}">Copy</button>
-                    <button class="delete-btn" data-text="${item.text}">Delete</button>
+                    <button class="copy-btn" data-id="${item.id}">Copy</button>
+                    <button class="delete-btn" data-id="${item.id}">Delete</button>
                 </td>
             `;
       tableBody.appendChild(row);
@@ -53,20 +51,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle Copy and Delete actions
   tableBody.addEventListener("click", (event) => {
     if (event.target.classList.contains("copy-btn")) {
-      const text = event.target.dataset.text;
-      navigator.clipboard.writeText(text);
-      console.log("copy-btn", text);
+      const id = event.target.dataset.id;
+      ipcRenderer.invoke("get-text-by-id", id).then((data) => {
+        console.log(data);
+        navigator.clipboard.writeText(data.text);
+      });
 
-      ipcRenderer.invoke("update-last-used", text).then((data) => {
+      ipcRenderer.invoke("update-last-used", id).then((data) => {
         allData = data;
         renderTable(data);
       });
     }
     if (event.target.classList.contains("delete-btn")) {
-      console.log("delete-btn", event.target.dataset.text);
-
-      const text = event.target.dataset.text;
-      ipcRenderer.invoke("delete-text", text).then((data) => {
+      const id = event.target.dataset.id;
+      ipcRenderer.invoke("delete-text", id).then((data) => {
         allData = data;
         renderTable(data);
       });
@@ -77,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("input", () => {
     const searchText = searchInput.value.toLowerCase();
     const filteredData = allData.filter((item) =>
-      item.text.toLowerCase().includes(searchText)
+      item.title.toLowerCase().includes(searchText)
     );
     renderTable(filteredData);
   });

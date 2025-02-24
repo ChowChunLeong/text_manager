@@ -42,7 +42,6 @@ app.whenReady().then(() => {
     },
   });
   mainWindow.loadFile("index.html");
-  mainWindow.webContents.openDevTools();
 });
 
 // Load saved data
@@ -64,18 +63,22 @@ ipcMain.handle("save-text", (event, newTitle, newText) => {
 });
 
 // Update last used time
-ipcMain.handle("update-last-used", (event, text) => {
+ipcMain.handle("update-last-used", (event, id) => {
   let data = readData().map((item) =>
-    item.text === text ? { ...item, lastUsed: new Date().toISOString() } : item
+    item.id === id ? { ...item, lastUsed: new Date().toISOString() } : item
   );
   writeData(data);
   return data;
 });
 
 // Delete text
-ipcMain.handle("delete-text", (event, text) => {
-  let data = readData().filter((item) => item.text !== text);
+ipcMain.handle("delete-text", (event, id) => {
+  let data = readData().filter((item) => item.id !== id);
   console.log("delete-text", data);
   writeData(data);
   return data;
+});
+
+ipcMain.handle("get-text-by-id", (event, id) => {
+  return readData().find((item) => item.id == id) || null;
 });
