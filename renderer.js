@@ -1,6 +1,7 @@
 const { ipcRenderer } = require("electron");
 
 document.addEventListener("DOMContentLoaded", () => {
+  const titleInput = document.getElementById("titleInput");
   const textInput = document.getElementById("textInput");
   const saveBtn = document.getElementById("saveBtn");
   const searchInput = document.getElementById("searchInput");
@@ -10,10 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderTable(data) {
     tableBody.innerHTML = "";
-    console.log("Before Sorting:", data); // Debugging
-
     data.sort((a, b) => {
-      console.log(`Comparing: ${a.lastUsed} vs ${b.lastUsed}`);
       return new Date(b.lastUsed) - new Date(a.lastUsed);
     });
 
@@ -41,12 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save new text
   saveBtn.addEventListener("click", () => {
     const newText = textInput.value.trim();
+    const newTitle = titleInput.value.trim();
     if (newText) {
-      ipcRenderer.invoke("save-text", newText).then((data) => {
+      ipcRenderer.invoke("save-text", newTitle, newText).then((data) => {
         allData = data;
         renderTable(data);
       });
       textInput.value = "";
+      titleInput.value = "";
     }
   });
 
@@ -55,12 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target.classList.contains("copy-btn")) {
       const text = event.target.dataset.text;
       navigator.clipboard.writeText(text);
+      console.log("copy-btn", text);
+
       ipcRenderer.invoke("update-last-used", text).then((data) => {
         allData = data;
         renderTable(data);
       });
     }
     if (event.target.classList.contains("delete-btn")) {
+      console.log("delete-btn", event.target.dataset.text);
+
       const text = event.target.dataset.text;
       ipcRenderer.invoke("delete-text", text).then((data) => {
         allData = data;

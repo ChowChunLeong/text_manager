@@ -1,8 +1,13 @@
+// 🔄 Enable auto-reloading during development
+try {
+  require("electron-reloader")(module);
+} catch (_) {}
+
 const { app, BrowserWindow, ipcMain, screen } = require("electron");
 const fs = require("fs");
 const path = require("path");
 
-const DATA_FILE = path.join(__dirname, "data.json");
+const DATA_FILE = path.join(app.getPath("userData"), "data.json");
 
 function readData() {
   try {
@@ -26,6 +31,7 @@ app.whenReady().then(() => {
   const mainWindow = new BrowserWindow({
     width: 600,
     height: 400,
+    icon: path.join(__dirname, "assets", "icon.png"), // Path to your icon
     x: width - windowWidth, // Move to the right side
     y: height - windowHeight, // Move to the bottom
     alwaysOnTop: true, // ✅ Keeps the window pinned on top
@@ -36,15 +42,23 @@ app.whenReady().then(() => {
     },
   });
   mainWindow.loadFile("index.html");
+  mainWindow.webContents.openDevTools();
 });
 
 // Load saved data
 ipcMain.handle("load-data", () => readData());
 
 // Save new text
-ipcMain.handle("save-text", (event, newText) => {
+ipcMain.handle("save-text", (event, newTitle, newText) => {
   const data = readData();
-  data.push({ text: newText, lastUsed: new Date().toISOString() });
+  const uuid = crypto.randomUUID();
+
+  data.push({
+    id: uuid,
+    title: newTitle,
+    text: newText,
+    lastUsed: new Date().toISOString(),
+  });
   writeData(data);
   return data;
 });
@@ -61,6 +75,7 @@ ipcMain.handle("update-last-used", (event, text) => {
 // Delete text
 ipcMain.handle("delete-text", (event, text) => {
   let data = readData().filter((item) => item.text !== text);
+  console.log("delete-text", data);
   writeData(data);
   return data;
 });
